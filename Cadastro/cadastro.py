@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import datetime as dt
 import pandas as pd
+from tkinter import messagebox
 
 lista_tipos = ['Galão', 'Saco', 'Caixa', 'Unidade']
 
@@ -21,9 +22,12 @@ def inserir_codigo():
     quant = entry_quant.get()
     data_criacao = dt.datetime.now()
     data_criacao = data_criacao.strftime("%d/%m/%y %H:%M")
-    new_row = {"ID": len(data_base)+1, "Descrição": descricao, "tipo": tipo,
-               "Quantidade": quant, "Data Criada": data_criacao}
-    data_base = pd.concat([data_base, pd.DataFrame(new_row, index=[0])])
+    if (descricao and tipo and quant and data_criacao) == "":
+        messagebox.showinfo("Alert", "Preencha os campos!")
+    else: 
+        new_row = {"ID": len(data_base)+1, "Descrição": descricao, "tipo": tipo,
+                "Quantidade": quant, "Data Criada": data_criacao}
+        data_base = pd.concat([data_base, pd.DataFrame(new_row, index=[0])])
 
 
 # Função que exibe a tabela na janela
