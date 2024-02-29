@@ -1,16 +1,16 @@
 import tkinter as tk
 from tkinter import ttk
 import datetime as dt
-import pandas as pd
 from tkinter import messagebox
+import sqlite3
 
 lista_tipos = ['Galão', 'Saco', 'Caixa', 'Unidade']
 
 janela = tk.Tk()
 
 # Variável global para armazenar os dados
-data_base = pd.DataFrame(columns=["ID", "Descrição", "tipo", "Quantidade", "Data Criada"])
-
+conn = sqlite3.connect('Database.db')
+c = conn.cursor()
 
 # Função que insere os dados na tabela
 def inserir_codigo():
@@ -24,17 +24,26 @@ def inserir_codigo():
     data_criacao = data_criacao.strftime("%d/%m/%y %H:%M")
     if (descricao and tipo and quant and data_criacao) == "":
         messagebox.showinfo("Alert", "Preencha os campos!")
-    else: 
-        new_row = {"ID": len(data_base)+1, "Descrição": descricao, "tipo": tipo,
-                "Quantidade": quant, "Data Criada": data_criacao}
-        data_base = pd.concat([data_base, pd.DataFrame(new_row, index=[0])])
+    else:
+        # Criação da tabela (apenas uma vez)
+        c.execute('''CREATE TABLE IF NOT EXISTS materiais (
+                             id INTEGER PRIMARY KEY,
+                             descricao TEXT NOT NULL,
+                             tipo TEXT NOT NULL,
+                             quant INTEGER NOT NULL,
+                             data_criacao TEXT NOT NULL
+                             )''')
+
+        # Inserção de dados na tabela
+        c.execute("INSERT INTO materiais (descricao, tipo, quant, data_criacao) VALUES (?, ?, ?, ?)",
+                  (descricao, tipo, quant, data_criacao))
+        conn.commit()
 
 
 # Função que exibe a tabela na janela
 def exibir_tabela():
-    tabela_str = data_base.to_string(index=False, col_space=20, justify='center')
-    mostra_tabela.config(text=tabela_str)
-
+    c.execute("SELECT * FROM materiais")
+    print(c.fetchall())
 
 # Titulo da janela
 janela.title("Ferramenta de cadastro de materiais")
